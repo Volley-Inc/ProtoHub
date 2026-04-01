@@ -3,8 +3,8 @@ import "./Global.scss"
 import "./utils/datadog"
 
 import { init } from "@noriginmedia/norigin-spatial-navigation"
-import { PlatformProvider, usePlatformStatus } from "@volley/platform-sdk/react"
-import { lazy, Suspense } from "react"
+import { PlatformProvider } from "@volley/platform-sdk/react"
+import { lazy, Suspense, Component, type ReactNode } from "react"
 import { createRoot } from "react-dom/client"
 
 import packageJson from "../package.json"
@@ -38,6 +38,36 @@ const basePlatformOptions = {
     readyEventTimeoutMs: 30000,
 }
 
+/**
+ * Wraps PlatformProvider so the app doesn't crash when Platform SDK
+ * can't connect (local dev without a session server). Falls back to
+ * rendering children without the Platform context.
+ */
+class PlatformErrorBoundary extends Component<{ children: ReactNode }, { hasFailed: boolean }> {
+    state = { hasFailed: false }
+    static getDerivedStateFromError() {
+        return { hasFailed: true }
+    }
+    componentDidCatch(error: Error) {
+        console.warn("[Proto-Hub] Platform SDK unavailable, running without it:", error.message)
+    }
+    render() {
+        if (this.state.hasFailed) {
+            return this.props.children
+        }
+        return (
+            <PlatformProvider
+                options={{
+                    ...basePlatformOptions,
+                    gameId: "proto-hub",
+                }}
+            >
+                {this.props.children}
+            </PlatformProvider>
+        )
+    }
+}
+
 init({ throttleKeypresses: true, throttle: 50 })
 initResourceDetection([pngDetector, s3Detector])
 window.addEventListener(
@@ -56,12 +86,7 @@ window.addEventListener(
 )
 
 createRoot(rootElement).render(
-    <PlatformProvider
-        options={{
-            ...basePlatformOptions,
-            gameId: "proto-hub",
-        }}
-    >
+    <PlatformErrorBoundary>
         <ArrowPressProvider>
             <ChunkLoadErrorBoundary>
                 <Suspense fallback={null}>
@@ -69,5 +94,5 @@ createRoot(rootElement).render(
                 </Suspense>
             </ChunkLoadErrorBoundary>
         </ArrowPressProvider>
-    </PlatformProvider>
+    </PlatformErrorBoundary>
 )
