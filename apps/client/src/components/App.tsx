@@ -1,33 +1,24 @@
-import { useAccount, useSessionId } from "@volley/platform-sdk/react"
+import { useAccount } from "@volley/platform-sdk/react"
 import { type FeatureBundle, LazyMotion } from "motion/react"
 import {
     type JSX,
     lazy,
     Suspense,
-    useCallback,
     useEffect,
     useMemo,
     useRef,
     useState,
 } from "react"
 
-import { getDeeplink } from "../config/deeplink"
-import { SHOULD_USE_DEV_UPSELL } from "../config/devOverrides"
 import { LOGO_DISPLAY_MILLIS } from "../config/envconfig"
-import { shouldUseWebCheckout } from "../config/platformDetection"
 import { AppLifecycleVideoProvider } from "../contexts/AppLifecycleVideoContext"
 import { useBrandDocumentMeta } from "../hooks/useBrandDocumentMeta"
 import { useDatadogIdentity } from "../hooks/useDatadogIdentity"
-import { useDeviceAuthorization } from "../hooks/useDeviceAuthorization"
-import { DevUpsellProvider } from "../hooks/useDevUpsell"
-import { useExperimentInit } from "../hooks/useExperimentInit"
 import { useFailedInitializationModal } from "../hooks/useFailedInitializationModal"
 import { useHubSessionStart } from "../hooks/useHubSessionStart"
 import { useInitializationDatadogRUMEvents } from "../hooks/useInitializationDatadogRUMEvents"
 import { useInitializationError } from "../hooks/useInitializationError"
-import { useIsJeopardyReload } from "../hooks/useIsJeopardyReload"
 import { usePlatformReadiness } from "../hooks/usePlatformReadiness"
-import { WebCheckoutUpsellProvider } from "../hooks/useWebCheckoutUpsell"
 import { getVideoIdent } from "../utils/getVideoIdent"
 import { ChunkLoadErrorBoundary } from "./ChunkLoadErrorBoundary/ChunkLoadErrorBoundary"
 import { FailedInitializationModal } from "./FailedInitializationModal"
@@ -42,12 +33,9 @@ const loadFeatures = (): Promise<FeatureBundle> =>
 
 function AppBody({
     platformInitializationError,
-    qrCodeRendered,
 }: {
     platformInitializationError: string | null
-    qrCodeRendered: boolean
 }): JSX.Element {
-    const { experimentsReady } = useExperimentInit()
     useDatadogIdentity()
     useBrandDocumentMeta()
 
@@ -65,13 +53,10 @@ function AppBody({
     })
     const [completedInitialLoad, setCompletedInitialLoad] =
         useState<boolean>(false)
-    const isWebCheckoutPlatform = shouldUseWebCheckout()
 
     const { account } = useAccount()
 
     const isPlatformReady = usePlatformReadiness()
-    const deeplink = getDeeplink()
-    const isJeopardyReload = useIsJeopardyReload()
 
     const initializationError = useInitializationError({
         platformInitializationError,
@@ -83,23 +68,21 @@ function AppBody({
 
     const hasInitializedRef = useRef(false)
 
-    useHubSessionStart(deeplink, isJeopardyReload, isPlatformReady)
+    useHubSessionStart(undefined, false, isPlatformReady)
 
     const isInitialized = useMemo(() => {
-        const isTvLoadingComplete =
+        const isLoadingComplete =
             videoComplete &&
-            experimentsReady &&
             assetLoadingStates.requiredImagesLoaded &&
             isPlatformReady
 
-        if (isTvLoadingComplete && !hasInitializedRef.current) {
+        if (isLoadingComplete && !hasInitializedRef.current) {
             hasInitializedRef.current = true
         }
 
-        return hasInitializedRef.current || isTvLoadingComplete
+        return hasInitializedRef.current || isLoadingComplete
     }, [
         videoComplete,
-        experimentsReady,
         assetLoadingStates.requiredImagesLoaded,
         isPlatformReady,
     ])
@@ -116,39 +99,29 @@ function AppBody({
     const initializationStages = useMemo(
         () => ({
             videoComplete,
-            experimentsReady,
+            experimentsReady: true,
             platformReady: isPlatformReady,
             isInitialized,
             ...assetLoadingStates,
-            qrCodeRendered,
-            isWebCheckoutPlatform,
+            qrCodeRendered: false,
+            isWebCheckoutPlatform: false,
             isSubscribed: account?.isSubscribed ?? null,
         }),
         [
             videoComplete,
-            experimentsReady,
             isPlatformReady,
             isInitialized,
             assetLoadingStates,
-            qrCodeRendered,
-            isWebCheckoutPlatform,
             account?.isSubscribed,
         ]
     )
 
     useInitializationDatadogRUMEvents(initializationStages)
 
-    useEffect(() => {
-        if (isJeopardyReload) {
-            setVideoComplete(true)
-        }
-    }, [isJeopardyReload])
-
     const appContent = (
         <>
             {!loadingComplete &&
                 !showFailedInitModal &&
-                !isJeopardyReload &&
                 !completedInitialLoad && (
                     <Loading
                         videoUrl={getVideoIdent()}
@@ -172,10 +145,8 @@ function AppBody({
                             assetLoadingStates.optionalImagesLoaded
                         }
                         setAssetLoadingStates={setAssetLoadingStates}
-                        isJeopardyReload={isJeopardyReload}
                         videoComplete={videoComplete}
                         platformReady={isPlatformReady}
-                        experimentsReady={experimentsReady}
                     />
                 )}
             </Suspense>
@@ -186,70 +157,17 @@ function AppBody({
 }
 
 /**
- * Root app component that orchestrates providers (error boundary, lifecycle video,
- * device auth for web checkout) and delegates initialization to AppBody.
+ * Root app component that orchestrates providers (error boundary, lifecycle video)
+ * and delegates initialization to AppBody.
  */
 export function App(): JSX.Element {
-    const [isModalOpen, setIsModalOpen] = useState(false)
-    const [qrCodeRendered, setQrCodeRendered] = useState(false)
-    const qrRenderedRef = useRef(false)
-    const sessionId = useSessionId()
-
-    const {
-        data: deviceAuth,
-        isLoading: isDeviceAuthLoading,
-        error: platformInitializationError,
-        authStatus,
-        setConnectionId,
-        retry,
-    } = useDeviceAuthorization(sessionId, shouldUseWebCheckout() && isModalOpen)
-
-    const handleModalOpenChange = useCallback((isOpen: boolean) => {
-        setIsModalOpen(isOpen)
-    }, [])
-
-    const handleQrRendered = useCallback(() => {
-        if (!qrRenderedRef.current) {
-            qrRenderedRef.current = true
-            setQrCodeRendered(true)
-        }
-    }, [])
-
-    const wrappedContent = (
+    return (
         <ChunkLoadErrorBoundary>
             <AppLifecycleVideoProvider>
                 <LazyMotion features={loadFeatures} strict>
-                    <AppBody
-                        platformInitializationError={
-                            platformInitializationError
-                        }
-                        qrCodeRendered={qrCodeRendered}
-                    />
+                    <AppBody platformInitializationError={null} />
                 </LazyMotion>
             </AppLifecycleVideoProvider>
         </ChunkLoadErrorBoundary>
     )
-
-    if (SHOULD_USE_DEV_UPSELL) {
-        return <DevUpsellProvider>{wrappedContent}</DevUpsellProvider>
-    }
-
-    if (shouldUseWebCheckout()) {
-        return (
-            <WebCheckoutUpsellProvider
-                authStatus={authStatus}
-                deviceAuth={deviceAuth}
-                isDeviceAuthLoading={isDeviceAuthLoading}
-                platformInitializationError={platformInitializationError}
-                setConnectionId={setConnectionId}
-                retry={retry}
-                onQrRendered={handleQrRendered}
-                onModalOpenChange={handleModalOpenChange}
-            >
-                {wrappedContent}
-            </WebCheckoutUpsellProvider>
-        )
-    }
-
-    return wrappedContent
 }

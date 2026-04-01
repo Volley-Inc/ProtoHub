@@ -7,13 +7,9 @@ import {
 import { useEffect, useState } from "react"
 
 import packageJson from "../../../../package.json"
-import { SHOULD_FORCE_WEB_CHECKOUT } from "../../../config/devOverrides"
 import { ENVIRONMENT } from "../../../config/envconfig"
 import { Environment } from "../../../config/environment"
 import { getCachedPlatform, isMobile } from "../../../config/platformDetection"
-import { getExperimentManager } from "../../../experiments/ExperimentManager"
-import type { ValidatedExperimentVariants } from "../../../experiments/experimentSchemata"
-import { ExperimentFlag } from "../../../experiments/experimentSchemata"
 import { useAccountId } from "../../../hooks/useAccountId"
 import { useAnonymousId } from "../../../hooks/useAnonymousId"
 import { useFocusDebug } from "../../../hooks/useFocusDebug"
@@ -24,41 +20,11 @@ import { logger } from "../../../utils/logger"
 import { logoutAndReload } from "../../../utils/logoutAndReload"
 import styles from "./Debug.module.scss"
 
-export const SIMULATE_PAYMENT_SUCCESS_TEXT = "Simulate Payment Success"
-
 const formatKonamiKey = (key: string): string => {
     if (key.startsWith("Arrow")) {
         return key.replace("Arrow", "").substring(0, 1)
     }
     return key.toUpperCase()
-}
-
-const formatExperimentValue = (
-    variant: ValidatedExperimentVariants[ExperimentFlag] | undefined
-): string => {
-    if (!variant) return "undefined"
-    if (variant.value === undefined || variant.value === "") return "control"
-    return variant.value
-}
-
-const shouldDisplayExperiment = (
-    variant: ValidatedExperimentVariants[ExperimentFlag] | undefined
-): boolean => {
-    if (!variant) return false
-
-    const value = formatExperimentValue(variant)
-
-    if (value === "undefined") return false
-
-    if (value === "control" || value === "") {
-        return Boolean(
-            variant.payload &&
-                typeof variant.payload === "object" &&
-                Object.keys(variant.payload).length > 0
-        )
-    }
-
-    return true
 }
 
 export const Debug: React.FC<{
@@ -70,20 +36,6 @@ export const Debug: React.FC<{
     const [memoryInfo, setMemoryInfo] =
         useState<ReturnType<typeof getMemoryUsage>>(null)
     const focusInfo = useFocusDebug()
-
-    const [experimentData, setExperimentData] = useState<{
-        initialized: boolean
-        variants: Record<
-            ExperimentFlag,
-            ValidatedExperimentVariants[ExperimentFlag] | undefined
-        >
-    }>({
-        initialized: false,
-        variants: {} as Record<
-            ExperimentFlag,
-            ValidatedExperimentVariants[ExperimentFlag] | undefined
-        >,
-    })
 
     const anonymousId = useAnonymousId()
     const accountId = useAccountId()
@@ -136,30 +88,6 @@ export const Debug: React.FC<{
 
         return (): void => clearInterval(interval)
     }, [deviceInfo, platform])
-
-    useEffect(() => {
-        try {
-            const experimentManager = getExperimentManager()
-
-            const updateExperimentData = (): void => {
-                setExperimentData({
-                    initialized: experimentManager.getIsInitialized(),
-                    variants: experimentManager.getAllVariants(),
-                })
-            }
-
-            updateExperimentData()
-            const unsubscribe =
-                experimentManager.onInitialized(updateExperimentData)
-
-            return (): void => {
-                unsubscribe()
-            }
-        } catch (error) {
-            logger.warn("Experiment manager not available", { error })
-            return
-        }
-    }, [])
 
     if (ENVIRONMENT === Environment.PRODUCTION) {
         return null
@@ -222,68 +150,6 @@ export const Debug: React.FC<{
                 page: {focusInfo.documentVisibility} | hasFocus:{" "}
                 {focusInfo.hasFocus ? "yes" : "no"}
             </span>
-            <div
-                style={{
-                    marginTop: "8px",
-                    fontSize: "10px",
-                    opacity: 0.7,
-                    display: "flex",
-                    flexDirection: "column",
-                }}
-            >
-                <span>
-                    experiments:{" "}
-                    {experimentData.initialized
-                        ? "initialized"
-                        : "not initialized"}
-                </span>
-                {experimentData.initialized && (
-                    <>
-                        {Object.values(ExperimentFlag).map((flag) => {
-                            const variant = experimentData.variants[flag]
-                            if (!shouldDisplayExperiment(variant)) return null
-                            const value = formatExperimentValue(variant)
-                            return (
-                                <span key={flag}>
-                                    {flag}: {value}
-                                </span>
-                            )
-                        })}
-                    </>
-                )}
-            </div>
-            {SHOULD_FORCE_WEB_CHECKOUT && (
-                <button
-                    onClick={() => {
-                        if (
-                            typeof window !== "undefined" &&
-                            (
-                                window as unknown as Window & {
-                                    simulatePaymentSuccess: () => void
-                                }
-                            ).simulatePaymentSuccess
-                        ) {
-                            ;(
-                                window as unknown as Window & {
-                                    simulatePaymentSuccess: () => void
-                                }
-                            ).simulatePaymentSuccess()
-                        }
-                    }}
-                    style={{
-                        padding: "8px 16px",
-                        backgroundColor: "#34C759",
-                        color: "white",
-                        border: "none",
-                        borderRadius: "4px",
-                        cursor: "pointer",
-                        fontSize: "12px",
-                        marginRight: "8px",
-                    }}
-                >
-                    {SIMULATE_PAYMENT_SUCCESS_TEXT}
-                </button>
-            )}
             {platform !== Platform.FireTV && (
                 <div className={styles.konamiSection}>
                     <span className={styles.konamiTitle}>

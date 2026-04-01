@@ -12,12 +12,11 @@ import { clearDeeplink, getDeeplink } from "../../../config/deeplink"
 import { OVERRIDE_GAME_ORCHESTRATION } from "../../../config/envconfig"
 import { ENVIRONMENT } from "../../../config/envconfig"
 import { Environment } from "../../../config/environment"
-import { isLGTV, shouldUseWebCheckout } from "../../../config/platformDetection"
+import { isLGTV } from "../../../config/platformDetection"
 import { useFocusRestoration } from "../../../hooks/useFocusRestoration"
 import { useGameFocusHandler } from "../../../hooks/useGameFocusHandler"
 import { GameLauncher } from "../../../hooks/useGameLauncher"
-import { type Game, GameId, useGames } from "../../../hooks/useGames"
-import { useGameSelectionUpsell } from "../../../hooks/useGameSelectionUpsell"
+import { type Game, useGames } from "../../../hooks/useGames"
 import { useHubModals } from "../../../hooks/useHubModals"
 import { useHubScreenTracking } from "../../../hooks/useHubScreenTracking"
 import { useHubTracking } from "../../../hooks/useHubTracking"
@@ -38,48 +37,26 @@ import styles from "./Main.module.scss"
 const MainContent: React.FC<{
     setAssetLoadingStates: (states: ImagePreloadingResult) => void
     isInitialized: boolean
-    isJeopardyReload: boolean
-    isInImmediateUpsell: boolean
 }> = ({
     setAssetLoadingStates,
     isInitialized,
-    isJeopardyReload,
-    isInImmediateUpsell,
 }) => {
     const { track } = useHubTracking()
     const games = useGames()
     const deeplink = getDeeplink()
     const { account } = useAccount()
 
-    const wasInImmediateUpsellRef = useRef(isInImmediateUpsell)
-    const deferMainHubAssets =
-        wasInImmediateUpsellRef.current && shouldUseWebCheckout()
     const imagePreloadingStates = useImagePreloading(
         games,
         account?.isSubscribed,
-        deferMainHubAssets
+        false
     )
     const { requiredImagesLoaded } = imagePreloadingStates
     useEffect(() => {
         setAssetLoadingStates(imagePreloadingStates)
     }, [imagePreloadingStates, setAssetLoadingStates])
 
-    const { isInGameSelectionUpsell, handleGamePaywall } =
-        useGameSelectionUpsell(deeplink)
-
-    const handleGamePaywallRef = useRef(handleGamePaywall)
-    useEffect(() => {
-        handleGamePaywallRef.current = handleGamePaywall
-    }, [handleGamePaywall])
-
-    const isGamePaywallSatisfied = useCallback(
-        (game: Game) => handleGamePaywallRef.current(game),
-        []
-    )
-
-    const isInUpsell = isInImmediateUpsell || isInGameSelectionUpsell
-
-    const isCarouselActive = isInitialized && !isInUpsell
+    const isCarouselActive = isInitialized
 
     const defaultGame = games[0]
     const [selectedGame, setSelectedGame] = useState<Game | undefined>(
@@ -103,29 +80,16 @@ const MainContent: React.FC<{
         gameLauncherRef.current = new GameLauncher(
             gameOrchestration,
             setLaunchedGameState,
-            isGamePaywallSatisfied
         )
     }
     const gameLauncher = gameLauncherRef.current
-
-    useEffect(() => {
-        if (isJeopardyReload && games.length > 0) {
-            logger.info("Main - launching jeopardy game after reload")
-            const jeopardyGame = games.find(
-                (game) => game.id === GameId.Jeopardy
-            )
-            if (jeopardyGame) {
-                void gameLauncher.launchGame(jeopardyGame)
-            }
-        }
-    }, [isJeopardyReload, games, gameLauncher])
 
     const [gameLoaded, setGameLoaded] = useState(false)
 
     const { screenDisplayedId } = useHubScreenTracking(
         isInitialized,
         launchedGameState?.activeGame ?? null,
-        isInUpsell
+        false
     )
 
     const {
@@ -139,7 +103,7 @@ const MainContent: React.FC<{
         isInitialized,
         activeGame: launchedGameState?.activeGame ?? null,
         gameLauncher,
-        isInUpsell,
+        isInUpsell: false,
     })
 
     const { updateLastFocusedTile } = useFocusRestoration({
@@ -148,7 +112,7 @@ const MainContent: React.FC<{
         isCarouselActive,
         launchedGameState,
         isInitialized,
-        isInUpsell,
+        isInUpsell: false,
     })
 
     const screenDisplayedIdRef = useRef<string | null>(null)
@@ -176,10 +140,6 @@ const MainContent: React.FC<{
             return
         }
 
-        if (isInImmediateUpsell) {
-            return
-        }
-
         clearDeeplink()
         const game = games.find((g) => g.id === deeplink.gameId)
         if (!game) {
@@ -200,7 +160,6 @@ const MainContent: React.FC<{
         gameLauncher,
         isInitialized,
         deeplink,
-        isInImmediateUpsell,
         track,
     ])
 
@@ -242,7 +201,7 @@ const MainContent: React.FC<{
 
     const body = (
         <div className={styles.mainContainer}>
-            {!isProcessingDeeplink && !isInImmediateUpsell && (
+            {!isProcessingDeeplink && (
                 <div className={styles.contentContainer}>
                     <div className={styles.heroSection}>
                         {selectedGame && launchedGameState === null && (
@@ -310,8 +269,6 @@ const MainContent: React.FC<{
 export const Main: React.FC<{
     setAssetLoadingStates: (states: ImagePreloadingResult) => void
     isInitialized: boolean
-    isJeopardyReload: boolean
-    isInImmediateUpsell: boolean
 }> = (props) => {
     return <MainContent {...props} />
 }

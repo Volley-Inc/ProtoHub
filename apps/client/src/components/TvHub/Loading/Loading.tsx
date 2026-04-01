@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react"
 
 import { SHOULD_SKIP_VIDEO } from "../../../config/devOverrides"
-import { useIsJeopardyReload } from "../../../hooks/useIsJeopardyReload"
 import { LoadingScreen } from "../LoadingScreen"
 
 interface LoadingProps {
@@ -17,14 +16,11 @@ export const Loading: React.FC<LoadingProps> = ({
     videoComplete,
     setVideoComplete,
 }) => {
-    const isJeopardyReload = useIsJeopardyReload()
     useEffect(() => {
-        const shouldSkipVideo = isJeopardyReload || SHOULD_SKIP_VIDEO
-
-        if (shouldSkipVideo) {
+        if (SHOULD_SKIP_VIDEO) {
             setVideoComplete(true)
         }
-    }, [isJeopardyReload, setVideoComplete])
+    }, [setVideoComplete])
 
     const [logoDisplayFinished, setLogoDisplayFinished] =
         useState<boolean>(false)
@@ -35,7 +31,7 @@ export const Loading: React.FC<LoadingProps> = ({
 
     return (
         <LoadingScreen
-            showIdentVideo={!isJeopardyReload}
+            showIdentVideo
             displayLogo={!logoDisplayFinished}
             videoUrl={videoUrl}
             videoComplete={videoComplete}

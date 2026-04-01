@@ -1,1 +1,0 @@
-pnpm dlx @commitlint/cli@19 --edit "$1"

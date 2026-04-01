@@ -6,7 +6,7 @@ import { useHubTimedReset } from "../../hooks/useHubTimedReset"
 import type { LaunchedGameState } from "../../hooks/useLaunchedGameState"
 import { useMemoryCleanup } from "../../hooks/useMemoryCleanup"
 import { logger } from "../../utils/logger"
-import { GameIframeController } from "../MobileHub/GameIframeController/GameIframeController"
+import { GameIframeController } from "../GameIframeController/GameIframeController"
 
 interface LaunchedGameProps {
     launchedGameState: LaunchedGameState | null

@@ -1,7 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 
-import type { VideoSegmentRanges } from "../components/WebCheckoutModal/webCheckoutModalConfig"
 import { attemptVideoAutoplay } from "../utils/attemptVideoAutoplay"
+
+/** Time segments for video intro and looping portions. */
+export interface VideoSegmentRanges {
+    loopStart?: number
+    loopEnd?: number
+}
 import { applyPlatformVideoOptimizations } from "../utils/platformVideoOptimizations"
 
 export type VideoSequencePhase = "intro" | "looping"

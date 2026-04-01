@@ -430,7 +430,7 @@ describe("GamesCarousel Component", () => {
             "../../hooks/useFocusTracking"
         ).useFocusTracking as jest.Mock
         const MockGameIframeController = jest.requireMock(
-            "../MobileHub/GameIframeController/GameIframeController"
+            "../GameIframeController/GameIframeController"
         ).GameIframeController as jest.Mock
         const mockGame: Game = {
             id: GameId.SongQuiz,

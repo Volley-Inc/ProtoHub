@@ -75,7 +75,7 @@ jest.mock("../../config/envconfig", () => ({
     getWindowVar: jest.fn(),
 }))
 
-jest.mock("../MobileHub/GameIframeController/GameIframeController", () => ({
+jest.mock("../GameIframeController/GameIframeController", () => ({
     GameIframeController: jest.fn(
         ({
             url,
@@ -272,7 +272,7 @@ describe("LaunchedGame Component", () => {
 
         it("handles different error objects", () => {
             const MockGameIframeController = jest.requireMock(
-                "../MobileHub/GameIframeController/GameIframeController"
+                "../GameIframeController/GameIframeController"
             ).GameIframeController
 
             // Create a custom error
@@ -313,7 +313,7 @@ describe("LaunchedGame Component", () => {
     describe("handleGameReady", () => {
         it("stops duration vital with success context when vital ref exists", () => {
             const MockGameIframeController = jest.requireMock(
-                "../MobileHub/GameIframeController/GameIframeController"
+                "../GameIframeController/GameIframeController"
             ).GameIframeController
 
             let capturedOnReady: (() => void) | null = null
@@ -352,7 +352,7 @@ describe("LaunchedGame Component", () => {
 
         it("calls onGameReady callback", () => {
             const MockGameIframeController = jest.requireMock(
-                "../MobileHub/GameIframeController/GameIframeController"
+                "../GameIframeController/GameIframeController"
             ).GameIframeController
 
             let capturedOnReady: (() => void) | null = null
@@ -382,7 +382,7 @@ describe("LaunchedGame Component", () => {
     describe("stopLaunchVital function", () => {
         it("handles different error types with vital ref", () => {
             const MockGameIframeController = jest.requireMock(
-                "../MobileHub/GameIframeController/GameIframeController"
+                "../GameIframeController/GameIframeController"
             ).GameIframeController
 
             const customError = new TypeError("Custom type error")
@@ -532,7 +532,7 @@ describe("LaunchedGame Component", () => {
     describe("integration with GameIframeController", () => {
         it("passes onClose callback correctly", () => {
             const MockGameIframeController = jest.requireMock(
-                "../MobileHub/GameIframeController/GameIframeController"
+                "../GameIframeController/GameIframeController"
             ).GameIframeController
 
             render(
@@ -557,7 +557,7 @@ describe("LaunchedGame Component", () => {
 
         it("onClose callback resets state correctly", () => {
             const MockGameIframeController = jest.requireMock(
-                "../MobileHub/GameIframeController/GameIframeController"
+                "../GameIframeController/GameIframeController"
             ).GameIframeController
 
             let capturedOnClose: (() => void) | null = null
@@ -588,7 +588,7 @@ describe("LaunchedGame Component", () => {
 
         it("onError callback handles errors correctly", () => {
             const MockGameIframeController = jest.requireMock(
-                "../MobileHub/GameIframeController/GameIframeController"
+                "../GameIframeController/GameIframeController"
             ).GameIframeController
 
             let capturedOnError: ((error: Error) => void) | null = null
@@ -630,7 +630,7 @@ describe("LaunchedGame Component", () => {
 
         it("onReady callback stops vital and calls onGameReady", () => {
             const MockGameIframeController = jest.requireMock(
-                "../MobileHub/GameIframeController/GameIframeController"
+                "../GameIframeController/GameIframeController"
             ).GameIframeController
 
             let capturedOnReady: (() => void) | null = null
@@ -669,7 +669,7 @@ describe("LaunchedGame Component", () => {
 
         it("passes onReady callback correctly", () => {
             const MockGameIframeController = jest.requireMock(
-                "../MobileHub/GameIframeController/GameIframeController"
+                "../GameIframeController/GameIframeController"
             ).GameIframeController
 
             render(
