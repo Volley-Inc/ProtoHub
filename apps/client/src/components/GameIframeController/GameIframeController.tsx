@@ -3,9 +3,9 @@ import "./GameIframeController.css"
 import { PlatformIFrame, useEventBroker } from "@volley/platform-sdk/react"
 import { useCallback, useEffect, useMemo, useState } from "react"
 
-import { clearGameIframeControllerUrl } from "../../../config/gameIframeControllerUrl"
-import { logger } from "../../../utils/logger"
-import { GameLoadingScreen } from "../../GameLoadingScreen/GameLoadingScreen"
+import { clearGameIframeControllerUrl } from "../../config/gameIframeControllerUrl"
+import { logger } from "../../utils/logger"
+import { GameLoadingScreen } from "../GameLoadingScreen/GameLoadingScreen"
 
 export const GAME_LOADING_DELAY = 1000
 
