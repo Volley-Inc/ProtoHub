@@ -44,7 +44,7 @@ export const BACKEND_SERVER_ENDPOINT = getWindowVar(
 
 export const SEGMENT_WRITE_KEY = getWindowVar(
     "SEGMENT_WRITE_KEY",
-    "GplqCvL1EzLnZNpAHYGqObnDzrAtgoAS"
+    ""
 )
 
 export const ENVIRONMENT = getEnvironment()
@@ -58,12 +58,12 @@ export const EXPERIMENT_ASSETS_CDN_URL = getEnvVar(
 
 export const DATADOG_APPLICATION_ID = getWindowVar(
     "DATADOG_APPLICATION_ID",
-    "ecb2cc5c-e9e7-4b5a-84db-5a30226cf47b"
+    ""
 )
 
 export const DATADOG_CLIENT_TOKEN = getWindowVar(
     "DATADOG_CLIENT_TOKEN",
-    "puba0d4f79e1c746beb2eb899c779858f08"
+    ""
 )
 
 export const OVERRIDE_GAME_ORCHESTRATION = getEnvVar(
