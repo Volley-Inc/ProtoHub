@@ -75,6 +75,7 @@ export const GameTile = ({
                     src={game.tileImageUrl}
                     alt={`Game ${index + 1}`}
                 />
+                <div className={styles.tileTitle}>{game.title}</div>
                 {game.status && <StatusBanner status={game.status} />}
                 {game.animationUri && (
                     <TileAnimation

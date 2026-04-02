@@ -81,6 +81,24 @@
   left: -8%;
 }
 
+.tileTitle {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: scale(6) scale(10);
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
+  color: #fff;
+  font-size: scale(14);
+  font-weight: 600;
+  z-index: 3;
+  border-radius: 0 0 scale(6) scale(6);
+  pointer-events: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .tileAnimation {
   width: 100%;
   height: scale(219);
