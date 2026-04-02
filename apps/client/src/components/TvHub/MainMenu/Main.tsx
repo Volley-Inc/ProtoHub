@@ -9,7 +9,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { v4 as uuidv4 } from "uuid"
 
 import { clearDeeplink, getDeeplink } from "../../../config/deeplink"
-import { OVERRIDE_GAME_ORCHESTRATION } from "../../../config/envconfig"
 import { ENVIRONMENT } from "../../../config/envconfig"
 import { Environment } from "../../../config/environment"
 import { isLGTV } from "../../../config/platformDetection"
@@ -23,8 +22,8 @@ import { useHubTracking } from "../../../hooks/useHubTracking"
 import { useLaunchedGameState } from "../../../hooks/useLaunchedGameState"
 import type { ImagePreloadingResult } from "../../../hooks/usePreloadImages"
 import { useImagePreloading } from "../../../hooks/usePreloadImages"
+import { FoundryGameOrchestration } from "../../../utils/FoundryGameOrchestration"
 import { logger } from "../../../utils/logger"
-import { OverridenGameOrchestration } from "../../../utils/OverridenGameOrchestration"
 import { ExitConfirmationModal } from "../../ExitConfirmationModal"
 import GamesCarousel from "../../GamesCarousel"
 import { LaunchedGame } from "../../LaunchedGame/LaunchedGame"
@@ -66,23 +65,29 @@ const MainContent: React.FC<{
     const sessionId = useSessionId()
 
     const platformApiGameOrchestration = useGameOrchestration()
-    const overridenGameOrchestration = new OverridenGameOrchestration(sessionId)
 
-    const gameOrchestration =
-        OVERRIDE_GAME_ORCHESTRATION === "true"
-            ? overridenGameOrchestration
-            : platformApiGameOrchestration
+    // Build a game-ID → Game lookup for the orchestration layer
+    const gamesByIdFn = useCallback(
+        () => new Map(games.map((g) => [g.id, g])),
+        [games]
+    )
+
+    const gameOrchestration = useMemo(
+        () =>
+            new FoundryGameOrchestration(
+                platformApiGameOrchestration,
+                sessionId,
+                gamesByIdFn
+            ),
+        [platformApiGameOrchestration, sessionId, gamesByIdFn]
+    )
 
     const [launchedGameState, setLaunchedGameState] = useLaunchedGameState()
 
-    const gameLauncherRef = useRef<GameLauncher | null>(null)
-    if (gameLauncherRef.current === null) {
-        gameLauncherRef.current = new GameLauncher(
-            gameOrchestration,
-            setLaunchedGameState,
-        )
-    }
-    const gameLauncher = gameLauncherRef.current
+    const gameLauncher = useMemo(
+        () => new GameLauncher(gameOrchestration, setLaunchedGameState),
+        [gameOrchestration, setLaunchedGameState]
+    )
 
     const [gameLoaded, setGameLoaded] = useState(false)
 
