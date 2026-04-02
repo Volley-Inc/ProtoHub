@@ -11,6 +11,14 @@ export default defineConfig(({ command }) => {
     return {
         server: {
             allowedHosts: true,
+            proxy: {
+                "/bifrost-api": {
+                    target: "https://bifrost-api.volley-services.net",
+                    changeOrigin: true,
+                    rewrite: (path) => path.replace(/^\/bifrost-api/, ""),
+                    secure: true,
+                },
+            },
         },
         preview: {
             allowedHosts: true,
