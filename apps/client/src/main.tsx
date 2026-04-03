@@ -54,17 +54,22 @@ const basePlatformOptions = {
 // Inject fallback session ID before PlatformProvider mounts
 ensureLocalHubSessionId(PLATFORM_STAGE)
 
-// Signal VWR that the app has loaded — must fire before PlatformProvider
-// initialises, otherwise VWR times out waiting for "ready" and falls back
-// to the regular Hub.
-try {
-    window.parent.postMessage(
-        { type: "ready", source: "platform-sdk-iframe", args: [] },
-        "*"
-    )
-} catch {
-    // Not in an iframe — ignore
+// Signal VWR that the app has loaded. Send immediately and repeat
+// after a short delay to ensure VWR's message listener is ready.
+function signalVwrReady(): void {
+    try {
+        window.parent.postMessage(
+            { type: "ready", source: "platform-sdk-iframe", args: [] },
+            "*"
+        )
+    } catch {
+        // Not in an iframe — ignore
+    }
 }
+signalVwrReady()
+setTimeout(signalVwrReady, 500)
+setTimeout(signalVwrReady, 1500)
+setTimeout(signalVwrReady, 3000)
 
 init({ throttleKeypresses: true, throttle: 50 })
 initResourceDetection([pngDetector, s3Detector])
