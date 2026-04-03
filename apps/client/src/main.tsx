@@ -16,7 +16,13 @@ function ensureLocalHubSessionId(stage: string): void {
     const url = new URL(window.location.href)
     if (!url.searchParams.has("volley_hub_session_id")) {
         url.searchParams.set("volley_hub_session_id", "local-dev-hub-session")
+        // Use both replaceState AND redirect to ensure the SDK picks it up
+        // On Fire TV WebView inside VWR, replaceState alone doesn't work
         window.history.replaceState({}, "", url.toString())
+        // If we're in a fresh page load (no session ID), redirect to force it
+        if (!window.location.search.includes("volley_hub_session_id")) {
+            window.location.replace(url.toString())
+        }
     }
 }
 
