@@ -47,7 +47,7 @@ const MainContent: React.FC<{
     const imagePreloadingStates = useImagePreloading(
         games,
         account?.isSubscribed,
-        false
+        true
     )
     const { requiredImagesLoaded } = imagePreloadingStates
     useEffect(() => {
@@ -232,7 +232,7 @@ const MainContent: React.FC<{
                             />
                         )}
                     </div>
-                    <div className={styles.carouselSection} style={{ border: '3px solid red', zIndex: 9999, background: 'rgba(0,0,0,0.7)' }}>
+                    <div className={styles.carouselSection}>
                         {requiredImagesLoaded && launchedGameState === null && (
                             <GamesCarousel
                                 onGameFocus={handleGameFocus}
