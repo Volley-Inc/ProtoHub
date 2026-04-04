@@ -75,6 +75,39 @@ const DEFAULT_PROTOTYPE_HERO = `${BASE_URL}assets/images/games/heroes/default-pr
 // Placeholder Foundry games (shown when APIs are not configured)
 // ---------------------------------------------------------------------------
 
+// Known Bifrost prototypes — hardcoded until the Bifrost API is externally
+// accessible (currently resolves to private 10.x IPs, unreachable from Fire TV).
+// These will be replaced by live API data once Cole adds an external ingress.
+const KNOWN_BIFROST_GAMES: Game[] = [
+    {
+        id: "word-smiths",
+        title: "Word Smiths",
+        tileImageUrl: `${BASE_URL}assets/images/games/tiles/default-prototype.webp`,
+        heroImageUrl: `${BASE_URL}assets/images/games/heroes/default-prototype.webp`,
+        source: "bifrost",
+        deploymentUrl: "https://word-smiths.volley-services.net",
+        status: "beta",
+    },
+    {
+        id: "space-invaders",
+        title: "Space Invaders",
+        tileImageUrl: `${BASE_URL}assets/images/games/tiles/default-prototype.webp`,
+        heroImageUrl: `${BASE_URL}assets/images/games/heroes/default-prototype.webp`,
+        source: "bifrost",
+        deploymentUrl: "https://space-invaders.volley-services.net",
+        status: "beta",
+    },
+    {
+        id: "tictactoe",
+        title: "Tic-Tac-Toe",
+        tileImageUrl: `${BASE_URL}assets/images/games/tiles/default-prototype.webp`,
+        heroImageUrl: `${BASE_URL}assets/images/games/heroes/default-prototype.webp`,
+        source: "bifrost",
+        deploymentUrl: "https://tictactoe.volley-services.net",
+        status: "beta",
+    },
+]
+
 const PLACEHOLDER_GAMES: Game[] = [
     {
         id: "brain-blast",
@@ -230,10 +263,14 @@ export const useGames = (): Game[] => {
             }
         }
 
-        // 3. If no API games, fall back to placeholders
-        if (allGames.length === 0) {
-            allGames.push(...PLACEHOLDER_GAMES)
+        // 3. If no Bifrost API games, use known prototypes as fallback
+        const hasBifrostGames = allGames.some((g) => g.source === "bifrost")
+        if (!hasBifrostGames) {
+            allGames.push(...KNOWN_BIFROST_GAMES)
         }
+
+        // 4. Always include placeholder games for variety
+        allGames.push(...PLACEHOLDER_GAMES)
 
         if (mountedRef.current) {
             // Only update state if the game list actually changed
