@@ -1,10 +1,8 @@
 import { useFocusable } from "@noriginmedia/norigin-spatial-navigation"
+import cn from "classnames"
 import { type JSX, useEffect } from "react"
 
 import styles from "./MenuButton.module.scss"
-
-const combineStyles = (...args: (string | false | null | undefined)[]): string =>
-    args.filter(Boolean).join(" ")
 
 type MenuButtonProps = {
     text: string
@@ -31,7 +29,7 @@ export const MenuButton = ({
     return (
         <button
             ref={ref}
-            className={combineStyles(styles.button, focused && styles.focused)}
+            className={cn(styles.button, focused && styles.focused)}
             onClick={onClick}
         >
             {text}
