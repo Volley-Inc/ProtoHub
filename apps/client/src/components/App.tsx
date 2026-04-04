@@ -70,11 +70,13 @@ function AppBody({
 
     useHubSessionStart(undefined, false, isPlatformReady)
 
+    // Foundry: don't require isPlatformReady for initialization.
+    // On Fire TV, platform auth may fail (401) but the carousel should
+    // still render. Platform readiness is nice-to-have, not a blocker.
     const isInitialized = useMemo(() => {
         const isLoadingComplete =
             videoComplete &&
-            assetLoadingStates.requiredImagesLoaded &&
-            isPlatformReady
+            assetLoadingStates.requiredImagesLoaded
 
         if (isLoadingComplete && !hasInitializedRef.current) {
             hasInitializedRef.current = true
@@ -84,7 +86,6 @@ function AppBody({
     }, [
         videoComplete,
         assetLoadingStates.requiredImagesLoaded,
-        isPlatformReady,
     ])
 
     const loadingComplete =
