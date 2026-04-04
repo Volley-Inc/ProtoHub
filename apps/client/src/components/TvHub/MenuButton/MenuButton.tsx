@@ -1,10 +1,10 @@
 import { useFocusable } from "@noriginmedia/norigin-spatial-navigation"
 import { type JSX, useEffect } from "react"
 
+import styles from "./MenuButton.module.scss"
+
 const combineStyles = (...args: (string | false | null | undefined)[]): string =>
     args.filter(Boolean).join(" ")
-
-import styles from "./MenuButton.module.scss"
 
 type MenuButtonProps = {
     text: string

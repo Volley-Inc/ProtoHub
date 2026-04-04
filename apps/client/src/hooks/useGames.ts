@@ -249,7 +249,7 @@ export const useGames = (): Game[] => {
                 const registryGames = await fetchRegistryGames(REGISTRY_API_URL)
                 allGames.push(...registryGames)
             } catch (err: unknown) {
-                logger.warn("Failed to fetch Registry API games", { error: String(err) })
+                logger.warn("Failed to fetch Registry API games", { error: err instanceof Error ? err.message : String(err) })
             }
         }
 
@@ -259,7 +259,7 @@ export const useGames = (): Game[] => {
                 const prototypes = await fetchBifrostPrototypes(BIFROST_API_URL)
                 allGames.push(...prototypes)
             } catch (err: unknown) {
-                logger.warn("Failed to fetch Bifrost prototypes", { error: String(err) })
+                logger.warn("Failed to fetch Bifrost prototypes", { error: err instanceof Error ? err.message : String(err) })
             }
         }
 
