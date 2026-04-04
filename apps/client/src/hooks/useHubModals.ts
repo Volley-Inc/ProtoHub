@@ -35,7 +35,6 @@ export const useHubModals = ({
     const {
         showExitModal,
         showExitModalRef,
-        openExitModal,
         handleConfirmExit,
         handleCancelExit,
         handleBackButtonInExitModal,

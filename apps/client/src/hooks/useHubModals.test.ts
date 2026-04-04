@@ -21,7 +21,7 @@ jest.mock("./useExitModal", () => ({
     } => ({
         showExitModal: mockShowExitModal,
         showExitModalRef: mockShowExitModalRef,
-        openExitModal: mockOpenExitModal,
+        openExitModal: mockOpenExitModal, // kept in mock for assertion checks
         handleConfirmExit: mockHandleConfirmExit,
         handleCancelExit: mockHandleCancelExit,
         handleBackButtonInExitModal: mockHandleBackButtonInExitModal,
@@ -84,14 +84,14 @@ describe("useHubModals", () => {
         expect(result.current.showWeekendRebrandModal).toBe(false)
     })
 
-    it("should call openExitModal when back button pressed and no modals open", () => {
+    it("should not open exit modal when back button pressed on carousel (VWR handles exit)", () => {
         const { result } = renderHook(() => useHubModals(defaultProps))
 
         act(() => {
             result.current.handleBackButton()
         })
 
-        expect(mockOpenExitModal).toHaveBeenCalled()
+        expect(mockOpenExitModal).not.toHaveBeenCalled()
     })
 
     it("should dismiss weekend rebrand modal on back button if it is open", () => {
