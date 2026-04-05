@@ -75,9 +75,10 @@ const DEFAULT_PROTOTYPE_HERO = `${BASE_URL}assets/images/games/heroes/default-pr
 // Placeholder Foundry games (shown when APIs are not configured)
 // ---------------------------------------------------------------------------
 
-// Known Bifrost prototypes — hardcoded until the Bifrost API is externally
-// accessible (currently resolves to private 10.x IPs, unreachable from Fire TV).
-// These will be replaced by live API data once Cole adds an external ingress.
+// Known Bifrost prototypes — used as fallback when the Bifrost API is
+// unreachable. The API is now public at bifrost-api.volley-services.net
+// but Fire TV WebView may still fail to reach it. These entries provide
+// custom artwork that the API doesn't serve.
 const KNOWN_BIFROST_GAMES: Game[] = [
     {
         id: "word-smiths",
@@ -104,6 +105,15 @@ const KNOWN_BIFROST_GAMES: Game[] = [
         heroImageUrl: `${BASE_URL}assets/images/games/heroes/tictactoe.webp`,
         source: "bifrost",
         deploymentUrl: "https://tictactoe.volley-services.net",
+        status: "beta",
+    },
+    {
+        id: "emoji-multiplatform",
+        title: "Guess the Emoji",
+        tileImageUrl: `${BASE_URL}assets/images/games/tiles/emoji-multiplatform.png`,
+        heroImageUrl: `${BASE_URL}assets/images/games/heroes/emoji-multiplatform.png`,
+        source: "bifrost",
+        deploymentUrl: "https://emoji-multiplatform.volley-services.net",
         status: "beta",
     },
 ]
